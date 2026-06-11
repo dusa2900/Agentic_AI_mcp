@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "github": {
+      "command": "node",
+      "args": [
+        "backend/dist/mcp/server/index.js"
+      ],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}",
+        "GITHUB_OWNER": "${GITHUB_OWNER}",
+        "GITHUB_REPO": "${GITHUB_REPO}"
+      }
+    }
+  }
+}

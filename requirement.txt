@@ -1,0 +1,130 @@
+Project: Carpooling Application
+Overview:
+Build a complete, production-ready carpooling application that supports multiple concurrent users, encourages reuse of common features across user roles, and is modular, testable, and deployable. The system must support route publishing, seat booking, user management, messaging/comments, travel history, and administrative controls.
+ 
+Chosen Tech Stack:
+- Frontend: React (TypeScript recommended) with Vite or Next.js for SSR/SEO as needed.
+- Backend: Node.js (Express or Fastify; TypeScript recommended).
+- Database: PostgreSQL.
+- Cache & Realtime: Redis for caching and distributed locks; Socket.IO or `ws` for realtime messaging.
+- Object Storage: S3-compatible storage (AWS S3, MinIO) for media.
+- CI/CD: GitHub Actions (or equivalent) for automated pipelines.
+
+Scope:
+- Multi-tenant, multi-user web application with RESTful API and optional realtime messaging.
+- Reusable components and services to be shared across user roles (publisher, traveler, admin).
+- Support for mobile-responsive UI and a clear separation between frontend, backend, and data layers.
+
+Actors:
+- Guest (browses public routes)
+- Registered User (traveler)
+- Publisher (user who publishes routes; may be same as Registered User)
+- Admin (manages users, moderates content, views analytics)
+
+Functional Requirements:
+1. Authentication & Authorization
+	- Sign up, login, password reset, email verification.
+	- Role-based access control (Traveler, Publisher, Admin).
+	- OAuth2/social login support (optional) and session management or JWT.
+
+2. User Profile & Settings
+	- Profile management (name, contact, vehicle info for publishers).
+	- Preferences: notification settings, privacy, travel history visibility.
+
+3. Route Publishing
+	- Create, edit, publish, and delete routes with: origin, destination, waypoints, date/time, available seats (max 4), price (optional), notes.
+	- Visibility options: public, private, invite-only.
+	- Reusable template: save common route templates for quick reuse.
+
+4. Search & Discovery
+	- Search routes by origin/destination, date range, seat availability.
+	- Filters for price, time window, publisher rating, distance.
+
+5. Booking & Seat Management
+	- Book a seat on a published route; prevent overbooking (max 4 seats per vehicle).
+	- Booking states: pending, confirmed, canceled, completed.
+	- Publisher can accept/reject bookings (or auto-accept policy).
+	- Booking notifications (email/push/in-app).
+
+6. Payments & Refunds (optional)
+	- Integration points for payment providers (Stripe/PayPal).
+	- Escrow or immediate payment options; refund/cancellation policies.
+
+7. Comments & Messaging
+	- Route-scoped comments/threads between publisher and travelers.
+	- Optional realtime chat (WebSocket) or polling-based messaging; permissions control.
+
+8. Travel History & Ratings
+	- Track published routes and bookings per user with statuses and timestamps.
+	- Allow ratings/reviews of trips and publishers; moderation workflow.
+
+9. Admin & Moderation
+	- Manage users, routes, reports, and content moderation tools.
+	- System analytics: active routes, booking rates, cancellations.
+
+10. Notifications & Emails
+	- Email templates and push/in-app notifications for key events.
+
+Non-Functional Requirements:
+- Scalability: design to scale horizontally for API and realtime layers.
+- Availability: aim for high availability with graceful degradation of realtime features.
+- Performance: API endpoints should respond within acceptable SLAs (e.g., <200ms for common reads under moderate load).
+- Security: encrypt sensitive data at rest and in transit; follow OWASP guidelines; rate limiting and abuse protection.
+- Privacy: store times in UTC; allow users to control profile visibility; GDPR data deletion support.
+- Extensibility & Reusability: modular services and UI components; share common features (authentication, notifications, seat grid UI) across roles.
+- Testability: unit, integration, and E2E test coverage for core flows (publish → book → comment → complete).
+
+Architecture & Reuse Guidelines:
+- Layered architecture: `frontend` (React/Vue), `backend` (Node/Python/Go), `data` (Postgres + Redis), optional `realtime` (WebSocket), `storage` (S3).
+- Microservice-friendly modules: auth, routes, bookings, comments, notifications, payments.
+- Provide SDKs or API client modules (JS/TS) for the frontend and third-party integrations.
+- Design shared UI components and hooks for: forms, modals, seat grid, route cards, pagination, and notifications.
+
+Data Models (high level):
+- User: id, name, email, phone, role, profile, vehicle_info
+- Route: id, publisher_id, origin, destination, waypoints, datetime_utc, seats_total, seats_available, price, visibility, status
+- Booking: id, route_id, user_id, seats_reserved, status, created_at, updated_at
+- Comment: id, route_id, author_id, content, is_instruction, created_at
+- Rating: id, route_id, author_id, score, comment, created_at
+
+API Endpoints (representative):
+- POST /auth/signup, POST /auth/login, POST /auth/forgot
+- GET /routes, POST /routes, GET /routes/:id, PATCH /routes/:id, DELETE /routes/:id
+- POST /routes/:id/book, DELETE /routes/:id/book/:bookingId
+- GET /routes/:id/comments, POST /routes/:id/comments
+- GET /users/:id/history, GET /users/:id/publisher-history
+
+Security & Operational Requirements:
+- Input validation and server-side authorization checks for all endpoints.
+- Audit logging for bookings, cancellations, and admin actions.
+- Backups and disaster recovery for databases and object storage.
+
+Testing & QA:
+- Unit tests for business logic (seat availability, booking flows).
+- Integration tests for API endpoints and DB transactions.
+- E2E tests for main user journeys using Playwright or Cypress.
+- Load testing for core endpoints (routes listing, booking).
+
+CI/CD & Deployment:
+- Automated pipelines for build, test, linter checks, and deployment to staging/production.
+- Infrastructure as Code (Terraform/CloudFormation) for reproducible environments.
+
+Deliverables & Acceptance Criteria:
+- A working web application supporting the listed functional flows.
+- API documentation (OpenAPI/Swagger) and a small API client library.
+- Test suite with passing unit, integration, and E2E tests for core flows.
+- Deployment scripts and README with setup and run instructions.
+
+Reusability Checklist:
+- Auth module usable across apps (standalone service or library).
+- Notifications and email templates configurable and reusable.
+- UI component library for route cards, booking modal, seat grid, and common form controls.
+
+Next Steps (recommended):
+1. Confirm tech stack preferences (frontend, backend, database).
+2. Create an initial API specification (OpenAPI) and data schema.
+3. Scaffold project skeletons and shared component library.
+4. Implement core MVP: auth, publish route, search, booking, comments.
+
+Acceptance: This `requirement.txt` contains the product-level and architectural requirements to begin implementation. Review and prioritize items for the MVP.
+

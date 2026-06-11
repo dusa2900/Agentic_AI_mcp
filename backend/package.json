@@ -1,0 +1,42 @@
+{
+  "name": "carpool-backend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc -p .",
+    "test": "jest",
+    "test-db": "node test-db.js",
+    "create-user": "node create-test-user.js",
+    "seed": "node seed-data.js",
+    "mcp:server": "ts-node src/mcp/server/index.ts",
+    "mcp:build": "tsc -p . && node dist/mcp/server/index.js",
+    "mcp:test": "ts-node src/mcp/client/test-client.ts",
+    "mcp:diagnostic": "ts-node src/mcp/diagnostic.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0",
+    "@octokit/rest": "^22.0.1",
+    "bcrypt": "^5.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.1.4",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "pg": "^8.11.0",
+    "uuid": "^9.0.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/express": "^4.17.17",
+    "@types/jest": "^29.5.2",
+    "@types/jsonwebtoken": "^9.0.1",
+    "@types/node": "^20.2.5",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.1.6"
+  }
+}

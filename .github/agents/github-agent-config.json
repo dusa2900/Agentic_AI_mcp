@@ -1,0 +1,255 @@
+{
+  "agentName": "GitHub MCP Client",
+  "version": "1.0.0",
+  "description": "Model Context Protocol agent for GitHub operations including branch management, commits, issue tracking, and merge conflict detection",
+  "capabilities": [
+    {
+      "name": "createBranch",
+      "description": "Create a new branch from the default or specified base branch",
+      "parameters": {
+        "branchName": {
+          "type": "string",
+          "required": true,
+          "description": "Name of the branch to create"
+        },
+        "owner": {
+          "type": "string",
+          "required": false,
+          "description": "Repository owner (defaults to GITHUB_OWNER env var)"
+        },
+        "repo": {
+          "type": "string",
+          "required": false,
+          "description": "Repository name (defaults to GITHUB_REPO env var)"
+        }
+      },
+      "returns": {
+        "success": "boolean",
+        "message": "string",
+        "branch": "string",
+        "baseSha": "string"
+      }
+    },
+    {
+      "name": "commitChanges",
+      "description": "Commit one or multiple files to a specific branch",
+      "parameters": {
+        "owner": {
+          "type": "string",
+          "required": false,
+          "description": "Repository owner"
+        },
+        "repo": {
+          "type": "string",
+          "required": false,
+          "description": "Repository name"
+        },
+        "branch": {
+          "type": "string",
+          "required": true,
+          "description": "Target branch for the commit"
+        },
+        "message": {
+          "type": "string",
+          "required": true,
+          "description": "Commit message"
+        },
+        "files": {
+          "type": "array",
+          "required": true,
+          "description": "Array of files with path and content",
+          "items": {
+            "path": "string",
+            "content": "string"
+          }
+        }
+      },
+      "returns": {
+        "success": "boolean",
+        "message": "string",
+        "commitSha": "string",
+        "filesCommitted": "array"
+      }
+    },
+    {
+      "name": "listRepositories",
+      "description": "List repositories for authenticated user or a specific user",
+      "parameters": {
+        "username": {
+          "type": "string",
+          "required": false,
+          "description": "GitHub username (omit for authenticated user's repos)"
+        }
+      },
+      "returns": {
+        "success": "boolean",
+        "repositories": "array",
+        "count": "number"
+      }
+    },
+    {
+      "name": "getIssues",
+      "description": "Retrieve issues from a repository",
+      "parameters": {
+        "owner": {
+          "type": "string",
+          "required": false,
+          "description": "Repository owner"
+        },
+        "repo": {
+          "type": "string",
+          "required": false,
+          "description": "Repository name"
+        },
+        "state": {
+          "type": "string",
+          "required": false,
+          "enum": ["open", "closed", "all"],
+          "default": "open",
+          "description": "Issue state filter"
+        }
+      },
+      "returns": {
+        "success": "boolean",
+        "issues": "array",
+        "count": "number"
+      }
+    },
+    {
+      "name": "getMergeConflicts",
+      "description": "Detect merge conflicts between two branches",
+      "parameters": {
+        "owner": {
+          "type": "string",
+          "required": false,
+          "description": "Repository owner"
+        },
+        "repo": {
+          "type": "string",
+          "required": false,
+          "description": "Repository name"
+        },
+        "baseBranch": {
+          "type": "string",
+          "required": false,
+          "default": "main",
+          "description": "Base branch for comparison"
+        },
+        "headBranch": {
+          "type": "string",
+          "required": false,
+          "default": "develop",
+          "description": "Head branch for comparison"
+        }
+      },
+      "returns": {
+        "success": "boolean",
+        "hasConflicts": "boolean",
+        "status": "string",
+        "ahead_by": "number",
+        "behind_by": "number",
+        "conflicts": "array",
+        "totalCommits": "number",
+        "message": "string"
+      }
+    },
+    {
+      "name": "getErrorsFromChecks",
+      "description": "Get CI/CD check run errors for a specific ref",
+      "parameters": {
+        "owner": {
+          "type": "string",
+          "required": false,
+          "description": "Repository owner"
+        },
+        "repo": {
+          "type": "string",
+          "required": false,
+          "description": "Repository name"
+        },
+        "ref": {
+          "type": "string",
+          "required": false,
+          "default": "HEAD",
+          "description": "Git reference (branch, tag, or SHA)"
+        }
+      },
+      "returns": {
+        "success": "boolean",
+        "hasErrors": "boolean",
+        "errors": "array",
+        "totalChecks": "number",
+        "message": "string"
+      }
+    }
+  ],
+  "configuration": {
+    "environmentVariables": {
+      "GITHUB_TOKEN": {
+        "required": true,
+        "description": "GitHub personal access token with appropriate scopes"
+      },
+      "GITHUB_OWNER": {
+        "required": true,
+        "description": "Default repository owner"
+      },
+      "GITHUB_REPO": {
+        "required": true,
+        "description": "Default repository name"
+      }
+    },
+    "requiredScopes": [
+      "repo",
+      "read:org",
+      "workflow"
+    ]
+  },
+  "integration": {
+    "devOrchestrator": {
+      "enabled": true,
+      "workflows": [
+        "FULL_FEATURE",
+        "BUG_FIX",
+        "REFACTOR"
+      ],
+      "stages": [
+        "requirements",
+        "implementation",
+        "testing",
+        "review"
+      ]
+    },
+    "qualityGates": {
+      "preCommit": [
+        "checkBranchExists",
+        "validateCommitMessage"
+      ],
+      "preMerge": [
+        "checkConflicts",
+        "checkCIStatus"
+      ]
+    }
+  },
+  "errorHandling": {
+    "retryPolicy": {
+      "maxRetries": 3,
+      "backoffMultiplier": 2,
+      "initialDelay": 1000
+    },
+    "errorCategories": {
+      "authentication": ["Bad credentials", "Token expired"],
+      "permission": ["Not Found", "Forbidden"],
+      "rateLimit": ["API rate limit exceeded"],
+      "conflict": ["Reference already exists", "Merge conflict"]
+    }
+  },
+  "monitoring": {
+    "logLevel": "info",
+    "metrics": [
+      "operationCount",
+      "errorRate",
+      "responseTime",
+      "rateLimitRemaining"
+    ]
+  }
+}
